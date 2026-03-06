@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coachella 2026 Ultimate Live Music Festival</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Abril+Fatface&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- FIREWORKS -->
+<canvas id="fireworks-canvas"></canvas>
+
+<!-- TOP BAR -->
+<div class="user-bar" id="userBar" style="display:none">
+  🎪 Welcome back, <span id="userName"></span> | Weekend 1: Apr 10–12, 2026 | Weekend 2: Apr 17–19, 2026
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">C2026</div>
+  <div class="nav-links">
+    <a href="#lineup">Lineup</a>
+    <a href="#stages">Stages</a>
+    <a href="#map">Map</a>
+    <a href="#tickets">Tickets</a>
+    <a href="#food">Food</a>
+    <a href="#merch">Merch</a>
+    <a href="#admin">Admin</a>
+  </div>
+  <div class="nav-actions">
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+    <button class="cart-btn" onclick="toggleCart()">
+      🛒 <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+    <button class="btn btn-outline" onclick="openLogin()" id="loginBtn">Login</button>
+    <button class="btn btn-primary" style="display:none" id="logoutBtn" onclick="logout()">Logout</button>
+  </div>
+</nav>
+
+<!-- LOGIN MODAL -->
+<div class="login-modal" id="loginModal">
+  <div class="login-box">
+    <button class="close-btn" onclick="closeLogin()">✕</button>
+    <div class="login-title">COACHELLA 2026</div>
+    <div class="login-sub">Sign in to book tickets, save your lineup & more</div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchAuthTab('login',this)">Login</button>
+      <button class="login-tab" onclick="switchAuthTab('register',this)">Register</button>
+    </div>
+    <!-- Login Form -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="login()">Sign In</button>
+      <p style="font-size:0.7rem;color:var(--text2);text-align:center;margin-top:12px">
+        Demo: admin@coachella.com / admin123 (Admin) or fan@coachella.com / fan123
+      </p>
+    </div>
+    <!-- Register Form -->
+    <div id="registerForm" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="regName" placeholder="Your Name">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="regEmail" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="regPassword" placeholder="Create password">
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="register()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal">
+  <div class="cart-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="cart-title">YOUR CART</div>
+      <button class="close-btn" style="position:static" onclick="toggleCart()">✕</button>
+    </div>
+    <!-- Order Status -->
+    <div class="order-status">
+      <div class="order-step done" id="step1">
+        <div class="step-circle">✓</div>BROWSE
+      </div>
+      <div class="order-step" id="step2">
+        <div class="step-circle">2</div>CART
+      </div>
+      <div class="order-step" id="step3">
+        <div class="step-circle">3</div>PAYMENT
+      </div>
+      <div class="order-step" id="step4">
+        <div class="step-circle">4</div>CONFIRM
+      </div>
+    </div>
+    <div id="cartItems"></div>
+    <div id="cartEmpty" style="text-align:center;padding:40px;color:var(--text2);font-size:0.8rem">
+      🎪 Your cart is empty. Add tickets, food or merch!
+    </div>
+    <div id="cartTotals" style="display:none">
+      <div class="promo-row">
+        <input type="text" class="promo-input" id="promoInput" placeholder="Promo code (COACHELLA10)">
+        <button class="btn btn-outline" onclick="applyPromo()" style="padding:8px 12px;font-size:0.7rem">Apply</button>
+      </div>
+      <div class="cart-total">
+        <div class="cart-total-row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+        <div class="cart-total-row"><span>Service Fee (5%)</span><span id="serviceFee">₹0</span></div>
+        <div class="cart-total-row" id="discountRow" style="display:none;color:var(--teal)"><span>Discount</span><span id="discountAmt">-₹0</span></div>
+        <div class="cart-total-row"><span>GST (18%)</span><span id="gst">₹0</span></div>
+        <div class="cart-total-final"><span>TOTAL</span><span id="totalAmount">₹0</span></div>
+      </div>
+      <div class="cart-actions">
+        <button class="btn btn-outline" style="flex:1" onclick="clearCart()">Clear</button>
+        <button class="btn btn-gold" style="flex:2" onclick="checkout()">Checkout →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="success-modal" id="successModal">
+  <div class="success-box">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">BOOKING CONFIRMED!</div>
+    <p style="color:var(--text2);font-size:0.8rem;margin-bottom:20px">
+      Your Coachella 2026 experience is locked in. Check your email for tickets!
+    </p>
+    <div id="bookingId" style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);margin-bottom:20px"></div>
+    <button class="btn btn-primary" onclick="closeSuccess()" style="padding:12px 40px">AWESOME!</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <!-- Animated desert palms -->
+  <svg class="palm-deco palm-left" viewBox="0 0 120 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 300 L60 120" stroke="#1a4a1a" stroke-width="8"/>
+    <path d="M60 140 Q20 100 0 60 Q40 90 60 120" fill="#1a5c1a" opacity="0.7"/>
+    <path d="M60 130 Q90 80 120 50 Q90 90 60 120" fill="#1a5c1a" opacity="0.7"/>
+    <path d="M60 160 Q10 140 -10 110 Q30 130 60 150" fill="#1a6a1a" opacity="0.5"/>
+    <path d="M60 155 Q100 120 120 90 Q90 125 60 145" fill="#1a6a1a" opacity="0.5"/>
+  </svg>
+  <svg class="palm-deco palm-right" viewBox="0 0 120 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M60 300 L60 120" stroke="#1a4a1a" stroke-width="8"/>
+    <path d="M60 140 Q20 100 0 60 Q40 90 60 120" fill="#1a5c1a" opacity="0.7"/>
+    <path d="M60 130 Q90 80 120 50 Q90 90 60 120" fill="#1a5c1a" opacity="0.7"/>
+    <path d="M60 160 Q10 140 -10 110 Q30 130 60 150" fill="#1a6a1a" opacity="0.5"/>
+    <path d="M60 155 Q100 120 120 90 Q90 125 60 145" fill="#1a6a1a" opacity="0.5"/>
+  </svg>
+  <div class="hero-content fade-in">
+    <div class="hero-eyebrow">🌴 The Desert Awaits — April 10–19, 2026</div>
+    <h1 class="hero-title">COACHELLA<br>2026</h1>
+    <div class="hero-subtitle">Ultimate Live Music Festival</div>
+    <div class="hero-dates">Empire Polo Club • Indio, California • Est. 1999</div>
+    <div class="hero-actions">
+      <button class="btn btn-gold" onclick="scrollTo('#tickets')">🎫 Book Tickets</button>
+      <button class="btn btn-primary" onclick="scrollTo('#lineup')">🎵 See Lineup</button>
+      <button class="btn btn-outline" onclick="scrollTo('#map')">🗺️ Festival Map</button>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTDOWN -->
+<div class="countdown-section">
+  <div class="countdown-inner">
+    <div class="countdown-label">⏳ Countdown to Coachella 2026 — Weekend 1</div>
+    <div class="countdown-grid">
+      <div class="countdown-unit"><div class="countdown-num" id="cd-days">00</div><div class="countdown-unit-label">Days</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-hours">00</div><div class="countdown-unit-label">Hours</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-mins">00</div><div class="countdown-unit-label">Minutes</div></div>
+      <div class="countdown-unit"><div class="countdown-num" id="cd-secs">00</div><div class="countdown-unit-label">Seconds</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- LINEUP SECTION -->
+<section class="lineup-section" id="lineup">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">🎤 Who's Playing</div>
+      <div class="section-title">THE 2026 LINEUP</div>
+    </div>
+    <!-- Favorites bar -->
+    <div class="favorites-bar" id="favoritesBar">
+      <div class="favorites-bar-title">❤️ Your Favorites</div>
+      <div class="fav-chips" id="favChips"></div>
+    </div>
+    <!-- Filter -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterLineup('all',this)">All Artists</button>
+      <button class="filter-tab" onclick="filterLineup('headliner',this)">Headliners</button>
+      <button class="filter-tab" onclick="filterLineup('coachella-stage',this)">Coachella Stage</button>
+      <button class="filter-tab" onclick="filterLineup('outdoor-theatre',this)">Outdoor Theatre</button>
+      <button class="filter-tab" onclick="filterLineup('sahara',this)">Sahara Stage</button>
+      <button class="filter-tab" onclick="filterLineup('sonara',this)">Sonora Stage</button>
+      <button class="filter-tab" onclick="filterLineup('yuma',this)">Yuma Stage</button>
+    </div>
+    <div id="lineupGrid" class="artists-grid"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- MAP SECTION -->
+<section class="map-section" id="map">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">🗺️ Navigate the Grounds</div>
+      <div class="section-title">FESTIVAL MAP</div>
+    </div>
+    <div class="map-container">
+      <div class="map-svg-wrapper">
+        <svg id="coachella-map" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <!-- Desert ground -->
+          <defs>
+            <radialGradient id="groundGrad" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" style="stop-color:#c4a882;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#9a7a52;stop-opacity:1"/>
+            </radialGradient>
+            <radialGradient id="grassGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" style="stop-color:#4a7c3f;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#2d5a1e;stop-opacity:1"/>
+            </radialGradient>
+            <filter id="glow-f">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Background desert -->
+          <rect width="1200" height="700" fill="url(#groundGrad)"/>
+          <!-- Mountains backdrop -->
+          <polygon points="0,200 100,80 220,160 350,50 500,140 600,60 750,150 900,40 1050,130 1200,70 1200,250 0,250" fill="#7a5a3a" opacity="0.4"/>
+          <polygon points="0,220 80,110 200,180 380,70 520,160 650,80 800,170 950,60 1100,140 1200,90 1200,270 0,270" fill="#8a6a4a" opacity="0.3"/>
+          <!-- Sky gradient top -->
+          <rect width="1200" height="260" fill="url(#groundGrad)" opacity="0.1"/>
+          <!-- Main Festival Grounds (green grass) -->
+          <rect x="80" y="240" width="1040" height="420" rx="20" fill="url(#grassGrad)" opacity="0.6"/>
+          <!-- Dirt paths -->
+          <rect x="550" y="240" width="100" height="420" fill="#b8965c" opacity="0.4"/>
+          <rect x="80" y="430" width="1040" height="60" fill="#b8965c" opacity="0.4"/>
+          <!-- COACHELLA MAIN STAGE - top center, grand -->
+          <rect x="480" y="250" width="240" height="140" rx="10" fill="#1a0a2e" stroke="#ffd700" stroke-width="3" filter="url(#glow-f)"/>
+          <rect x="490" y="260" width="220" height="100" rx="6" fill="#2a1050"/>
+          <!-- Stage screen -->
+          <rect x="500" y="268" width="200" height="80" rx="4" fill="#0a0020"/>
+          <!-- Stage lights -->
+          <circle cx="510" cy="268" r="6" fill="#ff6b35" opacity="0.8"/>
+          <circle cx="540" cy="268" r="6" fill="#ffd700" opacity="0.8"/>
+          <circle cx="570" cy="268" r="6" fill="#ff1493" opacity="0.8"/>
+          <circle cx="600" cy="268" r="6" fill="#00d4aa" opacity="0.8"/>
+          <circle cx="630" cy="268" r="6" fill="#9b59b6" opacity="0.8"/>
+          <circle cx="660" cy="268" r="6" fill="#ff6b35" opacity="0.8"/>
+          <circle cx="690" cy="268" r="6" fill="#ffd700" opacity="0.8"/>
+          <text x="600" y="345" text-anchor="middle" fill="#ffd700" font-size="13" font-weight="bold" font-family="Arial">COACHELLA STAGE</text>
+          <!-- Field area in front of main stage -->
+          <ellipse cx="600" cy="420" rx="230" ry="80" fill="#3a6a2a" opacity="0.5"/>
+          <!-- SAHARA STAGE - left -->
+          <rect x="90" y="280" width="180" height="110" rx="8" fill="#1a0a2e" stroke="#ff6b35" stroke-width="2"/>
+          <rect x="100" y="290" width="160" height="80" rx="4" fill="#2a1050"/>
+          <rect x="108" y="296" width="144" height="60" rx="3" fill="#0a0020"/>
+          <circle cx="115" cy="296" r="4" fill="#ff6b35" opacity="0.8"/>
+          <circle cx="135" cy="296" r="4" fill="#ffd700" opacity="0.8"/>
+          <circle cx="155" cy="296" r="4" fill="#ff1493" opacity="0.8"/>
+          <text x="180" y="385" text-anchor="middle" fill="#ff6b35" font-size="11" font-weight="bold" font-family="Arial">SAHARA STAGE</text>
+          <!-- OUTDOOR THEATRE - right far -->
+          <rect x="920" y="270" width="200" height="120" rx="8" fill="#1a0a2e" stroke="#00d4aa" stroke-width="2"/>
+          <rect x="930" y="280" width="180" height="90" rx="4" fill="#2a1050"/>
+          <rect x="938" y="288" width="164" height="70" rx="3" fill="#0a0020"/>
+          <circle cx="948" cy="288" r="4" fill="#00d4aa" opacity="0.9"/>
+          <circle cx="968" cy="288" r="4" fill="#ffd700" opacity="0.8"/>
+          <circle cx="988" cy="288" r="4" fill="#9b59b6" opacity="0.8"/>
+          <text x="1020" y="400" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="bold" font-family="Arial">OUTDOOR THEATRE</text>
+          <!-- SONORA STAGE - lower left -->
+          <rect x="100" y="490" width="160" height="100" rx="8" fill="#1a0a2e" stroke="#9b59b6" stroke-width="2"/>
+          <rect x="108" y="498" width="144" height="76" rx="4" fill="#2a1050"/>
+          <rect x="115" y="504" width="130" height="58" rx="3" fill="#0a0020"/>
+          <circle cx="125" cy="504" r="4" fill="#9b59b6" opacity="0.9"/>
+          <circle cx="145" cy="504" r="4" fill="#ff1493" opacity="0.8"/>
+          <circle cx="165" cy="504" r="4" fill="#ffd700" opacity="0.8"/>
+          <text x="180" y="602" text-anchor="middle" fill="#9b59b6" font-size="11" font-weight="bold" font-family="Arial">SONORA STAGE</text>
+          <!-- YUMA STAGE - lower right -->
+          <rect x="950" y="490" width="160" height="100" rx="8" fill="#1a0a2e" stroke="#ff1493" stroke-width="2"/>
+          <rect x="958" y="498" width="144" height="76" rx="4" fill="#2a1050"/>
+          <rect x="965" y="504" width="130" height="58" rx="3" fill="#0a0020"/>
+          <circle cx="975" cy="504" r="4" fill="#ff1493" opacity="0.9"/>
+          <circle cx="995" cy="504" r="4" fill="#9b59b6" opacity="0.8"/>
+          <circle cx="1015" cy="504" r="4" fill="#00d4aa" opacity="0.8"/>
+          <text x="1030" y="602" text-anchor="middle" fill="#ff1493" font-size="11" font-weight="bold" font-family="Arial">YUMA STAGE</text>
+          <!-- Ferris Wheel -->
+          <circle cx="820" cy="340" r="55" fill="none" stroke="#ff6b35" stroke-width="3" opacity="0.7"/>
+          <circle cx="820" cy="340" r="8" fill="#ff6b35"/>
+          <line x1="820" y1="285" x2="820" y2="395" stroke="#ff6b35" stroke-width="2" opacity="0.5"/>
+          <line x1="765" y1="340" x2="875" y2="340" stroke="#ff6b35" stroke-width="2" opacity="0.5"/>
+          <line x1="781" y1="301" x2="859" y2="379" stroke="#ff6b35" stroke-width="1.5" opacity="0.4"/>
+          <line x1="781" y1="379" x2="859" y2="301" stroke="#ff6b35" stroke-width="1.5" opacity="0.4"/>
+          <rect x="810" y="277" width="20" height="14" rx="3" fill="#ffd700" opacity="0.8"/>
+          <rect x="858" y="328" width="20" height="14" rx="3" fill="#ff6b35" opacity="0.8"/>
+          <rect x="810" y="388" width="20" height="14" rx="3" fill="#9b59b6" opacity="0.8"/>
+          <rect x="762" y="328" width="20" height="14" rx="3" fill="#00d4aa" opacity="0.8"/>
+          <text x="820" y="415" text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Arial">FERRIS WHEEL</text>
+          <line x1="820" y1="395" x2="820" y2="440" stroke="#ff6b35" stroke-width="3" opacity="0.5"/>
+          <!-- Art Installation 1 - Geometric sculpture -->
+          <polygon points="740,450 760,410 780,450" fill="#ff1493" opacity="0.7"/>
+          <polygon points="750,450 770,415 790,450" fill="#9b59b6" opacity="0.6"/>
+          <text x="765" y="466" text-anchor="middle" fill="#ff1493" font-size="8" font-family="Arial">ART INST.</text>
+          <!-- Art Installation 2 -->
+          <circle cx="400" cy="460" r="25" fill="none" stroke="#00d4aa" stroke-width="2" opacity="0.7"/>
+          <circle cx="400" cy="460" r="15" fill="none" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
+          <circle cx="400" cy="460" r="5" fill="#00d4aa" opacity="0.8"/>
+          <text x="400" y="496" text-anchor="middle" fill="#00d4aa" font-size="8" font-family="Arial">SCULPTURE</text>
+          <!-- Food Courts -->
+          <rect x="310" y="480" width="120" height="70" rx="6" fill="#5a3a10" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
+          <text x="370" y="510" text-anchor="middle" fill="#ff6b35" font-size="9" font-weight="bold" font-family="Arial">FOOD COURT</text>
+          <text x="370" y="526" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">NORTH WING</text>
+          <rect x="650" y="480" width="120" height="70" rx="6" fill="#5a3a10" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
+          <text x="710" y="510" text-anchor="middle" fill="#ff6b35" font-size="9" font-weight="bold" font-family="Arial">FOOD COURT</text>
+          <text x="710" y="526" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">SOUTH WING</text>
+          <!-- Merch Store -->
+          <rect x="480" y="580" width="120" height="60" rx="6" fill="#1a0a2e" stroke="#ffd700" stroke-width="1.5" opacity="0.9"/>
+          <text x="540" y="608" text-anchor="middle" fill="#ffd700" font-size="9" font-weight="bold" font-family="Arial">MERCH STORE</text>
+          <text x="540" y="623" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">OFFICIAL SHOP</text>
+          <!-- Entrance / Exit -->
+          <rect x="540" y="638" width="120" height="32" rx="6" fill="#2a5020" stroke="#4a9030" stroke-width="2"/>
+          <text x="600" y="659" text-anchor="middle" fill="#7adc50" font-size="10" font-weight="bold" font-family="Arial">MAIN ENTRANCE</text>
+          <!-- Water stations -->
+          <circle cx="290" cy="390" r="12" fill="#00d4aa" opacity="0.7"/>
+          <text x="290" y="394" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
+          <circle cx="900" cy="390" r="12" fill="#00d4aa" opacity="0.7"/>
+          <text x="900" y="394" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
+          <circle cx="600" cy="560" r="12" fill="#00d4aa" opacity="0.7"/>
+          <text x="600" y="564" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
+          <!-- First Aid -->
+          <rect x="850" y="490" width="36" height="36" rx="4" fill="#cc0000" opacity="0.8"/>
+          <text x="868" y="513" text-anchor="middle" fill="#fff" font-size="16" font-family="Arial">+</text>
+          <text x="868" y="538" text-anchor="middle" fill="#cc0000" font-size="8" font-family="Arial">FIRST AID</text>
+          <!-- Palm trees decorative -->
+          <g opacity="0.5">
+            <line x1="270" y1="450" x2="270" y2="350" stroke="#3a2010" stroke-width="5"/>
+            <ellipse cx="255" cy="350" rx="22" ry="10" fill="#2a6020" transform="rotate(-20,255,350)"/>
+            <ellipse cx="285" cy="345" rx="22" ry="10" fill="#2a6020" transform="rotate(20,285,345)"/>
+            <ellipse cx="270" cy="340" rx="22" ry="10" fill="#3a7030" transform="rotate(-5,270,340)"/>
+          </g>
+          <g opacity="0.5">
+            <line x1="870" y1="450" x2="870" y2="350" stroke="#3a2010" stroke-width="5"/>
+            <ellipse cx="855" cy="350" rx="22" ry="10" fill="#2a6020" transform="rotate(-20,855,350)"/>
+            <ellipse cx="885" cy="345" rx="22" ry="10" fill="#2a6020" transform="rotate(20,885,345)"/>
+            <ellipse cx="870" cy="340" rx="22" ry="10" fill="#3a7030" transform="rotate(-5,870,340)"/>
+          </g>
+          <!-- VIP Area -->
+          <rect x="460" y="395" width="160" height="50" rx="6" fill="#2a1050" stroke="#ffd700" stroke-width="1.5" opacity="0.8"/>
+          <text x="540" y="420" text-anchor="middle" fill="#ffd700" font-size="9" font-weight="bold" font-family="Arial">VIP LOUNGE</text>
+          <text x="540" y="436" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">EXCLUSIVE ACCESS</text>
+          <!-- Camping Area -->
+          <rect x="80" y="600" width="200" height="60" rx="6" fill="#1a3a0a" stroke="#4a7a2a" stroke-width="1.5" opacity="0.8"/>
+          <text x="180" y="626" text-anchor="middle" fill="#7adc50" font-size="9" font-weight="bold" font-family="Arial">⛺ CAMPING ZONE</text>
+          <text x="180" y="643" text-anchor="middle" fill="#4a9030" font-size="8" font-family="Arial">WRISTBAND REQUIRED</text>
+          <!-- Parking -->
+          <rect x="920" y="610" width="200" height="50" rx="6" fill="#1a1a2e" stroke="#4a4a8a" stroke-width="1.5" opacity="0.8"/>
+          <text x="1020" y="633" text-anchor="middle" fill="#8a8adc" font-size="9" font-weight="bold" font-family="Arial">🚗 PARKING LOTS</text>
+          <text x="1020" y="650" text-anchor="middle" fill="#6a6aac" font-size="8" font-family="Arial">SHUTTLE AVAILABLE</text>
+          <!-- Map title -->
+          <text x="600" y="230" text-anchor="middle" fill="#ffd700" font-size="20" font-weight="bold" font-family="Arial" opacity="0.8">COACHELLA 2026 — EMPIRE POLO CLUB, INDIO CA</text>
+          <!-- Compass -->
+          <g transform="translate(1150,30)">
+            <circle r="22" fill="rgba(0,0,0,0.5)" stroke="#ffd700" stroke-width="1.5"/>
+            <text x="0" y="-8" text-anchor="middle" fill="#ffd700" font-size="10" font-weight="bold" font-family="Arial">N</text>
+            <text x="0" y="14" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">S</text>
+            <text x="-13" y="4" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">W</text>
+            <text x="13" y="4" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">E</text>
+            <polygon points="0,-16 3,-4 0,0 -3,-4" fill="#ffd700"/>
+            <polygon points="0,16 3,4 0,0 -3,4" fill="#f7c59f" opacity="0.6"/>
+          </g>
+        </svg>
+      </div>
+      <div class="map-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div>Coachella Stage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div>Sahara Stage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Outdoor Theatre</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Sonora Stage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff1493"></div>Yuma Stage</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Water Station 💧</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#cc0000"></div>First Aid +</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#5a3a10"></div>Food Court 🍔</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1a0a2e;border:1px solid #ffd700"></div>Merch Store</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff6b35;border-radius:50%"></div>Ferris Wheel 🎡</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- TICKETS -->
+<section class="tickets-section" id="tickets">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">🎫 Secure Your Spot</div>
+      <div class="section-title">GET YOUR TICKETS</div>
+    </div>
+    <div class="tickets-grid" id="ticketsGrid"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- FOOD SECTION -->
+<section class="food-section" id="food">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">🍕 Fuel Your Festival</div>
+      <div class="section-title">FESTIVAL FOOD</div>
+    </div>
+    <div class="filter-tabs" id="foodFilterTabs">
+      <button class="filter-tab active" onclick="filterFood('all',this)">All</button>
+      <button class="filter-tab" onclick="filterFood('exclusive',this)">Coachella Exclusive</button>
+      <button class="filter-tab" onclick="filterFood('mains',this)">Mains</button>
+      <button class="filter-tab" onclick="filterFood('snacks',this)">Snacks</button>
+      <button class="filter-tab" onclick="filterFood('drinks',this)">Drinks</button>
+      <button class="filter-tab" onclick="filterFood('desserts',this)">Desserts</button>
+      <button class="filter-tab" onclick="filterFood('vegan',this)">Vegan</button>
+    </div>
+    <div class="food-grid" id="foodGrid"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- MERCH SECTION -->
+<section class="merch-section" id="merch">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-eyebrow">👕 Take Home the Vibe</div>
+      <div class="section-title">OFFICIAL MERCH</div>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterMerch('all',this)">All</button>
+      <button class="filter-tab" onclick="filterMerch('exclusive',this)">Coachella Exclusive</button>
+      <button class="filter-tab" onclick="filterMerch('headliner',this)">Headliner Collab</button>
+      <button class="filter-tab" onclick="filterMerch('artist',this)">Artist Collab</button>
+      <button class="filter-tab" onclick="filterMerch('apparel',this)">Apparel</button>
+      <button class="filter-tab" onclick="filterMerch('accessories',this)">Accessories</button>
+    </div>
+    <div class="merch-grid" id="merchGrid"></div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ADMIN PANEL -->
+<section class="admin-section" id="admin">
+  <div class="container admin-panel">
+    <div class="section-header">
+      <div class="section-eyebrow">⚙️ Festival Management</div>
+      <div class="section-title">ADMIN PANEL</div>
+    </div>
+    <div id="adminLocked" style="text-align:center;padding:40px;color:var(--text2)">
+      <div style="font-size:3rem;margin-bottom:16px">🔒</div>
+      <p style="font-size:0.9rem;margin-bottom:20px">Admin access required. Login with admin@coachella.com</p>
+      <button class="btn btn-primary" onclick="openLogin()">Login as Admin</button>
+    </div>
+    <div id="adminContent" style="display:none">
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
+        <button class="admin-tab" onclick="switchAdminTab('tickets',this)">Ticket Sales</button>
+        <button class="admin-tab" onclick="switchAdminTab('users',this)">Users</button>
+        <button class="admin-tab" onclick="switchAdminTab('artists',this)">Artists</button>
+        <button class="admin-tab" onclick="switchAdminTab('analytics',this)">Analytics</button>
+      </div>
+      <div class="admin-content active" id="tab-dashboard">
+        <div class="admin-stats" id="adminStats"></div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px">
+          <div style="font-size:0.7rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;text-transform:uppercase">Live Revenue (DSA: Running Sum)</div>
+          <div id="revenueBar" style="display:flex;gap:4px;align-items:flex-end;height:80px"></div>
+        </div>
+      </div>
+      <div class="admin-content" id="tab-tickets">
+        <div style="margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="adminAddTicketType()">+ Add Ticket Type</button>
+          <button class="btn btn-outline" onclick="exportData()">Export CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="ticketTable">
+            <thead><tr><th>Ticket Type</th><th>Price (₹)</th><th>Sold</th><th>Available</th><th>Revenue</th><th>Actions</th></tr></thead>
+            <tbody id="ticketTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-content" id="tab-users">
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Tickets</th><th>Total Spent</th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-content" id="tab-artists">
+        <div style="margin-bottom:16px;display:flex;gap:12px">
+          <button class="btn btn-primary" onclick="adminAddArtist()">+ Add Artist</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead><tr><th>Artist</th><th>Stage</th><th>Day</th><th>Time</th><th>Genre</th><th>Status</th></tr></thead>
+            <tbody id="artistsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-content" id="tab-analytics">
+        <div class="admin-stats">
+          <div class="stat-card">
+            <div class="stat-value" id="anaConversion">0%</div>
+            <div class="stat-label">Conversion Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="anaAvgOrder">₹0</div>
+            <div class="stat-label">Avg Order Value</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="anaFavArtist">-</div>
+            <div class="stat-label">Most Favorited Artist</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="anaTopFood">-</div>
+            <div class="stat-label">Top Rated Food</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px">
+          <div style="font-size:0.7rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;text-transform:uppercase">DSA Feature: Heap Sort — Top Artists by Favorites</div>
+          <div id="heapSortOutput" style="font-size:0.8rem;color:var(--text2);line-height:2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">COACHELLA 2026</div>
+  <div class="footer-text">Empire Polo Club • Indio, California • Apr 10–19, 2026</div>
+  <div style="margin-top:16px;font-size:0.65rem;color:var(--text2);opacity:0.5">
+    © 2026 Coachella Music & Arts Festival. All rights reserved.
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
