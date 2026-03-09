@@ -1,11 +1,762 @@
-<!DOCTYPE html>
+< !DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coachella 2026 Ultimate Live Music Festival</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Abril+Fatface&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<style>
+:root {
+  --bg: #0a0612;
+  --bg2: #120820;
+  --card: #1a0f2e;
+  --card2: #221540;
+  --accent: #ff6b35;
+  --accent2: #f7c59f;
+  --gold: #ffd700;
+  --pink: #ff1493;
+  --purple: #9b59b6;
+  --teal: #00d4aa;
+  --text: #f0e6ff;
+  --text2: #b8a9d4;
+  --border: rgba(155,89,182,0.3);
+  --glow: rgba(255,107,53,0.4);
+  --headliner-glow: rgba(255,215,0,0.5);
+}
+[data-theme="light"] {
+  --bg: #fff5f0;
+  --bg2: #ffe8d6;
+  --card: #ffffff;
+  --card2: #fdf0e8;
+  --text: #1a0a2e;
+  --text2: #4a2f6e;
+  --border: rgba(155,89,182,0.2);
+  --glow: rgba(255,107,53,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Space Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:none;
+}
+/* CUSTOM CURSOR */
+.cursor{
+  position:fixed;width:20px;height:20px;
+  border:2px solid var(--accent);border-radius:50%;
+  pointer-events:none;z-index:99999;
+  transition:transform 0.15s ease,border-color 0.3s;
+  mix-blend-mode:difference;
+}
+.cursor-dot{
+  position:fixed;width:6px;height:6px;
+  background:var(--accent);border-radius:50%;
+  pointer-events:none;z-index:99999;
+  transform:translate(-50%,-50%);
+}
+/* FIREWORKS CANVAS */
+#fireworks-canvas{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:1;
+}
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 40px;
+  background:rgba(10,6,18,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.8rem;letter-spacing:3px;
+  background:linear-gradient(135deg,var(--accent),var(--gold),var(--pink));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.nav-links{display:flex;gap:20px;align-items:center;}
+.nav-links a{
+  color:var(--text2);text-decoration:none;
+  font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;
+  transition:color 0.3s;
+}
+.nav-links a:hover{color:var(--accent);}
+.nav-actions{display:flex;gap:12px;align-items:center;}
+.btn{
+  padding:8px 20px;border:none;border-radius:4px;
+  font-family:'Space Mono',monospace;font-size:0.75rem;
+  letter-spacing:1px;cursor:pointer;transition:all 0.3s;
+  text-transform:uppercase;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  color:#fff;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px var(--glow);}
+.btn-outline{
+  background:transparent;color:var(--accent);
+  border:1px solid var(--accent);
+}
+.btn-outline:hover{background:var(--accent);color:#fff;}
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold),#ff8c00);color:#000;font-weight:700;
+}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 8px 25px var(--headliner-glow);}
+.theme-toggle{
+  background:none;border:1px solid var(--border);
+  color:var(--text);padding:8px 12px;border-radius:4px;
+  cursor:pointer;font-size:1rem;
+}
+.cart-btn{
+  position:relative;background:none;border:1px solid var(--border);
+  color:var(--text);padding:8px 14px;border-radius:4px;
+  cursor:pointer;font-size:1.1rem;
+}
+.cart-badge{
+  position:absolute;top:-8px;right:-8px;
+  background:var(--pink);color:#fff;
+  border-radius:50%;width:18px;height:18px;
+  font-size:0.65rem;display:flex;align-items:center;justify-content:center;
+}
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;overflow:hidden;z-index:2;
+  padding:100px 20px 60px;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 50%,rgba(155,89,182,0.3) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(255,107,53,0.25) 0%,transparent 50%),
+             radial-gradient(ellipse at 50% 80%,rgba(255,20,147,0.2) 0%,transparent 50%),
+             url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+             var(--bg);
+}
+.hero-palms{
+  position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(to top,rgba(10,6,18,0.9) 0%,transparent 100%);
+  z-index:1;
+}
+.hero-content{position:relative;z-index:2;text-align:center;}
+.hero-eyebrow{
+  font-size:0.75rem;letter-spacing:6px;color:var(--accent);
+  text-transform:uppercase;margin-bottom:20px;
+}
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3rem,9vw,9rem);
+  line-height:0.9;
+  letter-spacing:4px;
+  background:linear-gradient(135deg,#fff 0%,var(--gold) 30%,var(--accent) 60%,var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  text-shadow:none;
+  margin-bottom:10px;
+}
+.hero-subtitle{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1rem,2.5vw,2rem);
+  color:var(--accent2);font-style:italic;
+  margin-bottom:30px;
+}
+.hero-dates{
+  font-size:0.8rem;letter-spacing:4px;color:var(--text2);
+  text-transform:uppercase;margin-bottom:40px;
+}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+/* COUNTDOWN */
+.countdown-section{
+  background:rgba(0,0,0,0.4);border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);padding:40px 20px;
+  position:relative;z-index:2;
+}
+.countdown-inner{
+  max-width:800px;margin:0 auto;text-align:center;
+}
+.countdown-label{
+  font-size:0.7rem;letter-spacing:5px;color:var(--accent);
+  text-transform:uppercase;margin-bottom:24px;
+}
+.countdown-grid{
+  display:flex;gap:20px;justify-content:center;flex-wrap:wrap;
+}
+.countdown-unit{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:20px 28px;min-width:100px;
+}
+.countdown-num{
+  font-family:'Bebas Neue',sans-serif;font-size:3.5rem;
+  background:linear-gradient(135deg,var(--gold),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;line-height:1;
+}
+.countdown-unit-label{
+  font-size:0.6rem;letter-spacing:3px;color:var(--text2);text-transform:uppercase;
+}
+/* SECTION STYLES */
+section{position:relative;z-index:2;padding:80px 20px;}
+.section-header{text-align:center;margin-bottom:60px;}
+.section-eyebrow{
+  font-size:0.7rem;letter-spacing:5px;color:var(--accent);
+  text-transform:uppercase;margin-bottom:12px;
+}
+.section-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.5rem,5vw,4.5rem);letter-spacing:3px;
+  background:linear-gradient(135deg,var(--text),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.container{max-width:1400px;margin:0 auto;}
+/* LINEUP */
+.lineup-section{background:var(--bg2);}
+.stage-block{margin-bottom:60px;}
+.stage-name{
+  font-family:'Bebas Neue',sans-serif;font-size:2rem;
+  letter-spacing:4px;border-left:4px solid var(--accent);
+  padding-left:16px;margin-bottom:30px;color:var(--accent2);
+}
+.stage-name.headliner-stage{
+  border-color:var(--gold);color:var(--gold);
+  text-shadow:0 0 20px var(--headliner-glow);
+}
+.artists-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:20px;
+}
+.artist-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:all 0.3s;position:relative;
+}
+.artist-card:hover{
+  transform:translateY(-6px);
+  border-color:var(--accent);
+  box-shadow:0 12px 40px rgba(255,107,53,0.3);
+}
+.artist-card.headliner{
+  border-color:rgba(255,215,0,0.4);
+  background:linear-gradient(135deg,var(--card),rgba(255,215,0,0.05));
+}
+.artist-card.headliner:hover{
+  border-color:var(--gold);
+  box-shadow:0 12px 40px var(--headliner-glow);
+}
+.artist-card.favorited{border-color:var(--pink) !important;}
+.artist-img{
+  width:100%;height:160px;object-fit:cover;
+  background:linear-gradient(135deg,var(--card2),var(--bg2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:3rem;
+}
+.artist-img img{width:100%;height:100%;object-fit:cover;object-position:top;}
+.headliner-badge{
+  position:absolute;top:10px;right:10px;
+  background:linear-gradient(135deg,var(--gold),#ff8c00);
+  color:#000;font-size:0.55rem;letter-spacing:2px;
+  padding:3px 8px;border-radius:20px;font-weight:700;
+  text-transform:uppercase;
+}
+.artist-info{padding:14px;}
+.artist-name{
+  font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
+  letter-spacing:2px;color:var(--text);margin-bottom:4px;
+}
+.artist-genre{font-size:0.65rem;color:var(--text2);letter-spacing:1px;}
+.artist-time{font-size:0.65rem;color:var(--accent);margin-top:4px;}
+.fav-btn{
+  position:absolute;top:10px;left:10px;
+  background:rgba(0,0,0,0.6);border:none;
+  color:var(--text2);font-size:1rem;width:30px;height:30px;
+  border-radius:50%;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all 0.3s;
+}
+.fav-btn.active{color:var(--pink);background:rgba(255,20,147,0.2);}
+/* MAP */
+.map-section{background:var(--bg);}
+#coachella-map{
+  width:100%;max-width:1200px;margin:0 auto;
+  border-radius:16px;overflow:hidden;
+  border:2px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+/* TICKETS */
+.tickets-section{background:var(--bg2);}
+.tickets-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:24px;max-width:1200px;margin:0 auto;
+}
+.ticket-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:30px;position:relative;overflow:hidden;
+  transition:all 0.3s;
+}
+.ticket-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(155,89,182,0.3);
+}
+.ticket-card.vip{
+  border-color:var(--gold);
+  background:linear-gradient(135deg,var(--card),rgba(255,215,0,0.05));
+}
+.ticket-card.premium{
+  border-color:var(--pink);
+  background:linear-gradient(135deg,var(--card),rgba(255,20,147,0.05));
+}
+.ticket-tier{
+  font-size:0.65rem;letter-spacing:3px;color:var(--accent);
+  text-transform:uppercase;margin-bottom:8px;
+}
+.ticket-name{
+  font-family:'Bebas Neue',sans-serif;font-size:2rem;
+  letter-spacing:2px;margin-bottom:4px;
+}
+.ticket-price{
+  font-size:2.5rem;font-weight:700;
+  background:linear-gradient(135deg,var(--gold),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:16px;
+}
+.ticket-perks{list-style:none;margin-bottom:24px;}
+.ticket-perks li{
+  font-size:0.75rem;color:var(--text2);
+  padding:6px 0;border-bottom:1px solid var(--border);
+  display:flex;gap:8px;
+}
+.ticket-perks li::before{content:'✓';color:var(--teal);}
+.qty-control{
+  display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.qty-btn{
+  background:var(--card2);border:1px solid var(--border);
+  color:var(--text);width:32px;height:32px;border-radius:4px;
+  cursor:pointer;font-size:1.2rem;display:flex;align-items:center;
+  justify-content:center;transition:all 0.2s;
+}
+.qty-btn:hover{background:var(--accent);border-color:var(--accent);}
+.qty-display{
+  font-family:'Bebas Neue',sans-serif;font-size:1.5rem;
+  min-width:30px;text-align:center;
+}
+/* FOOD */
+.food-section{background:var(--bg);}
+.food-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;max-width:1400px;margin:0 auto;
+}
+.food-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;transition:all 0.3s;cursor:pointer;
+}
+.food-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 30px rgba(255,107,53,0.25);
+}
+.food-card.exclusive{
+  border-color:var(--gold);
+  position:relative;
+}
+.food-card.exclusive::before{
+  content:'COACHELLA EXCLUSIVE';
+  position:absolute;top:10px;left:0;right:0;
+  text-align:center;font-size:0.5rem;letter-spacing:3px;
+  background:var(--gold);color:#000;padding:3px;z-index:1;
+}
+.food-img{
+  height:140px;display:flex;align-items:center;
+  justify-content:center;font-size:3rem;
+  background:linear-gradient(135deg,var(--card2),var(--bg2));
+}
+.food-info{padding:14px;}
+.food-name{
+  font-family:'Playfair Display',serif;font-size:1rem;
+  margin-bottom:4px;color:var(--text);
+}
+.food-desc{font-size:0.7rem;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.food-price{
+  font-size:1.2rem;font-weight:700;color:var(--accent);
+}
+.food-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:10px;
+}
+.star-rating{display:flex;gap:3px;}
+.star{cursor:pointer;font-size:0.9rem;color:var(--text2);transition:color 0.2s;}
+.star.active,.star:hover{color:var(--gold);}
+.fav-food-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:1.1rem;transition:all 0.3s;
+}
+.fav-food-btn.active{filter:drop-shadow(0 0 5px var(--pink));}
+.add-to-cart-btn{
+  width:100%;padding:8px;margin-top:10px;
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  border:none;color:#fff;border-radius:6px;
+  font-family:'Space Mono',monospace;font-size:0.7rem;
+  letter-spacing:1px;cursor:pointer;transition:all 0.3s;
+}
+.add-to-cart-btn:hover{opacity:0.9;transform:translateY(-1px);}
+/* MERCH */
+.merch-section{background:var(--bg2);}
+.merch-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;max-width:1400px;margin:0 auto;
+}
+.merch-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;transition:all 0.3s;cursor:pointer;
+  position:relative;
+}
+.merch-card.artist-collab{
+  border-color:var(--purple);
+}
+.merch-card.exclusive{border-color:var(--gold);}
+.merch-badge{
+  position:absolute;top:10px;left:10px;z-index:1;
+  font-size:0.55rem;letter-spacing:2px;padding:3px 8px;
+  border-radius:20px;text-transform:uppercase;font-weight:700;
+}
+.merch-badge.exclusive-badge{background:var(--gold);color:#000;}
+.merch-badge.collab-badge{background:var(--purple);color:#fff;}
+.merch-badge.headliner-badge{
+  background:linear-gradient(135deg,var(--gold),var(--accent));color:#000;
+}
+.merch-img{
+  height:160px;display:flex;align-items:center;
+  justify-content:center;font-size:3.5rem;
+  background:linear-gradient(135deg,var(--card2),var(--bg2));
+}
+.merch-info{padding:14px;}
+.merch-name{
+  font-family:'Playfair Display',serif;font-size:0.95rem;
+  margin-bottom:4px;color:var(--text);
+}
+.merch-artist{font-size:0.65rem;color:var(--accent);margin-bottom:6px;letter-spacing:1px;}
+.merch-price{font-size:1.2rem;font-weight:700;color:var(--gold);}
+/* ADMIN PANEL */
+.admin-section{
+  background:var(--bg);border-top:3px solid var(--accent);
+}
+.admin-panel{
+  max-width:1200px;margin:0 auto;
+}
+.admin-tabs{
+  display:flex;gap:0;margin-bottom:30px;
+  border-bottom:1px solid var(--border);
+}
+.admin-tab{
+  background:none;border:none;color:var(--text2);
+  font-family:'Space Mono',monospace;font-size:0.75rem;
+  letter-spacing:2px;padding:12px 24px;cursor:pointer;
+  text-transform:uppercase;transition:all 0.3s;
+  border-bottom:2px solid transparent;
+}
+.admin-tab.active{
+  color:var(--accent);border-bottom-color:var(--accent);
+}
+.admin-content{display:none;}
+.admin-content.active{display:block;}
+.admin-stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;margin-bottom:30px;
+}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:20px;
+}
+.stat-value{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.stat-label{font-size:0.7rem;color:var(--text2);letter-spacing:2px;text-transform:uppercase;}
+.data-table{width:100%;border-collapse:collapse;font-size:0.75rem;}
+.data-table th{
+  background:var(--card2);color:var(--accent2);
+  padding:12px 16px;text-align:left;letter-spacing:2px;
+  text-transform:uppercase;border-bottom:1px solid var(--border);
+}
+.data-table td{
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  color:var(--text2);
+}
+.data-table tr:hover td{background:var(--card2);}
+/* CART MODAL */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.8);
+  z-index:2000;display:none;align-items:flex-end;
+  justify-content:flex-end;padding:80px 20px 20px;
+}
+.modal-overlay.open{display:flex;}
+.cart-modal{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:16px;width:100%;max-width:500px;
+  max-height:80vh;overflow-y:auto;
+  padding:30px;
+}
+.cart-title{
+  font-family:'Bebas Neue',sans-serif;font-size:2rem;
+  letter-spacing:3px;margin-bottom:20px;
+  border-bottom:1px solid var(--border);padding-bottom:16px;
+}
+.cart-item{
+  display:flex;align-items:center;gap:16px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.cart-item-emoji{font-size:2rem;}
+.cart-item-info{flex:1;}
+.cart-item-name{font-size:0.85rem;color:var(--text);}
+.cart-item-price{font-size:0.75rem;color:var(--accent);}
+.cart-item-remove{
+  background:none;border:none;color:var(--text2);
+  cursor:pointer;font-size:1.2rem;
+}
+.cart-total{
+  margin-top:20px;padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.cart-total-row{
+  display:flex;justify-content:space-between;
+  font-size:0.8rem;padding:4px 0;color:var(--text2);
+}
+.cart-total-final{
+  display:flex;justify-content:space-between;
+  font-size:1.2rem;font-weight:700;
+  color:var(--accent);margin-top:8px;padding-top:8px;
+  border-top:1px solid var(--border);
+}
+.cart-actions{display:flex;gap:12px;margin-top:20px;}
+/* LOGIN MODAL */
+.login-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.9);
+  z-index:3000;display:none;align-items:center;justify-content:center;
+}
+.login-modal.open{display:flex;}
+.login-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:50px 40px;width:100%;max-width:440px;
+  position:relative;
+}
+.login-title{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;
+  letter-spacing:3px;margin-bottom:8px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;text-align:center;
+}
+.login-sub{font-size:0.75rem;color:var(--text2);text-align:center;margin-bottom:30px;}
+.form-group{margin-bottom:20px;}
+.form-label{font-size:0.7rem;letter-spacing:2px;color:var(--text2);text-transform:uppercase;margin-bottom:8px;display:block;}
+.form-input{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:12px 16px;color:var(--text);
+  font-family:'Space Mono',monospace;font-size:0.85rem;
+  transition:border-color 0.3s;outline:none;
+}
+.form-input:focus{border-color:var(--accent);}
+.login-tabs{
+  display:flex;margin-bottom:30px;border-bottom:1px solid var(--border);
+}
+.login-tab{
+  flex:1;background:none;border:none;color:var(--text2);
+  font-family:'Space Mono',monospace;font-size:0.75rem;
+  padding:10px;cursor:pointer;border-bottom:2px solid transparent;
+  text-transform:uppercase;letter-spacing:2px;
+}
+.login-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.close-btn{
+  position:absolute;top:16px;right:16px;
+  background:none;border:none;color:var(--text2);
+  font-size:1.5rem;cursor:pointer;
+}
+/* CHECKOUT SUCCESS */
+.success-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,0.9);
+  z-index:3000;display:none;align-items:center;justify-content:center;
+}
+.success-modal.open{display:flex;}
+.success-box{
+  background:var(--card);border:1px solid var(--teal);
+  border-radius:20px;padding:50px;text-align:center;
+  max-width:500px;width:90%;
+}
+.success-icon{font-size:4rem;margin-bottom:20px;}
+.success-title{
+  font-family:'Bebas Neue',sans-serif;font-size:2.5rem;
+  letter-spacing:3px;color:var(--teal);margin-bottom:12px;
+}
+/* PALM TREE SVG DECO */
+.palm-deco{
+  position:absolute;bottom:0;width:120px;opacity:0.4;
+  pointer-events:none;
+}
+.palm-left{left:0;}
+.palm-right{right:0;transform:scaleX(-1);}
+/* SECTION DIVIDER */
+.section-divider{
+  height:1px;background:linear-gradient(90deg,transparent,var(--accent),var(--gold),var(--pink),transparent);
+  margin:0;opacity:0.4;
+}
+/* FOOTER */
+footer{
+  background:var(--bg);border-top:1px solid var(--border);
+  padding:40px 20px;text-align:center;position:relative;z-index:2;
+}
+.footer-logo{
+  font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:4px;
+  background:linear-gradient(135deg,var(--accent),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:8px;
+}
+.footer-text{font-size:0.7rem;color:var(--text2);letter-spacing:2px;}
+/* TABS */
+.filter-tabs{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;
+}
+.filter-tab{
+  background:var(--card);border:1px solid var(--border);
+  color:var(--text2);padding:8px 20px;border-radius:20px;
+  font-family:'Space Mono',monospace;font-size:0.7rem;
+  letter-spacing:1px;cursor:pointer;transition:all 0.3s;
+}
+.filter-tab.active{
+  background:var(--accent);border-color:var(--accent);color:#fff;
+}
+/* TOAST */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--card);border:1px solid var(--teal);
+  border-radius:8px;padding:12px 24px;font-size:0.8rem;
+  color:var(--teal);z-index:5000;transition:transform 0.4s;
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+/* NOTIFICATION */
+.user-bar{
+  background:linear-gradient(135deg,var(--accent),var(--pink));
+  text-align:center;font-size:0.75rem;letter-spacing:2px;
+  padding:8px;color:#fff;position:relative;z-index:2;
+}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--purple);border-radius:3px;}
+/* REVIEW SECTION */
+.review-section{
+  max-width:600px;margin:20px auto 0;
+  padding:16px;background:var(--bg2);border-radius:8px;
+  display:none;
+}
+.review-section.open{display:block;}
+.review-textarea{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:10px;color:var(--text);
+  font-family:'Space Mono',monospace;font-size:0.75rem;
+  resize:none;height:80px;margin-top:10px;
+}
+/* CHECKOUT FORM */
+.checkout-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+/* ANIMATE IN */
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(30px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.fade-in{animation:fadeInUp 0.6s ease forwards;}
+@keyframes pulse{
+  0%,100%{opacity:1;}50%{opacity:0.6;}
+}
+.pulse{animation:pulse 2s infinite;}
+/* MOBILE */
+@media(max-width:768px){
+  nav{padding:12px 16px;}
+  .nav-links{display:none;}
+  .hero-title{font-size:clamp(2.5rem,12vw,5rem);}
+  .artists-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+}
+/* Headliner special card */
+.artist-card.headliner .artist-img{height:200px;}
+.stage-headliner-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:24px;
+}
+/* Map styles */
+.map-container{
+  position:relative;width:100%;max-width:1200px;margin:0 auto;
+}
+.map-svg-wrapper{
+  border-radius:16px;overflow:hidden;border:2px solid var(--border);
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+.map-legend{
+  display:flex;flex-wrap:wrap;gap:12px;
+  justify-content:center;margin-top:20px;
+}
+.legend-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:0.7rem;color:var(--text2);letter-spacing:1px;
+}
+.legend-dot{width:12px;height:12px;border-radius:50%;}
+/* Favorites bar */
+.favorites-bar{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:20px;margin-bottom:30px;
+  display:none;
+}
+.favorites-bar.has-items{display:block;}
+.favorites-bar-title{
+  font-size:0.7rem;letter-spacing:3px;color:var(--accent);
+  text-transform:uppercase;margin-bottom:12px;
+}
+.fav-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.fav-chip{
+  background:var(--card2);border:1px solid var(--pink);
+  color:var(--pink);font-size:0.65rem;padding:4px 12px;
+  border-radius:20px;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px;
+}
+.chip-remove{background:none;border:none;color:var(--pink);cursor:pointer;font-size:0.8rem;}
+/* Order tracking */
+.order-status{
+  display:flex;gap:0;margin-bottom:20px;
+}
+.order-step{
+  flex:1;text-align:center;padding:12px;
+  font-size:0.65rem;letter-spacing:1px;color:var(--text2);
+  position:relative;
+}
+.order-step::after{
+  content:'';position:absolute;top:50%;right:0;
+  width:100%;height:2px;background:var(--border);z-index:-1;
+}
+.order-step:last-child::after{display:none;}
+.order-step.done{color:var(--teal);}
+.order-step.done::after{background:var(--teal);}
+.step-circle{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--border);display:flex;
+  align-items:center;justify-content:center;
+  margin:0 auto 6px;font-size:0.8rem;
+}
+.order-step.done .step-circle{background:var(--teal);border-color:var(--teal);color:#000;}
+/* Promo code */
+.promo-row{display:flex;gap:8px;margin-bottom:12px;}
+.promo-input{
+  flex:1;background:var(--bg);border:1px solid var(--border);
+  border-radius:6px;padding:8px 12px;color:var(--text);
+  font-family:'Space Mono',monospace;font-size:0.75rem;
+}
+</style>
 </head>
 <body>
 
@@ -185,10 +936,10 @@
   <div class="countdown-inner">
     <div class="countdown-label">⏳ Countdown to Coachella 2026 — Weekend 1</div>
     <div class="countdown-grid">
-      <div class="countdown-unit"><div class="countdown-num" id="cd-days">00</div><div class="countdown-unit-label">Days</div></div>
-      <div class="countdown-unit"><div class="countdown-num" id="cd-hours">00</div><div class="countdown-unit-label">Hours</div></div>
-      <div class="countdown-unit"><div class="countdown-num" id="cd-mins">00</div><div class="countdown-unit-label">Minutes</div></div>
-      <div class="countdown-unit"><div class="countdown-num" id="cd-secs">00</div><div class="countdown-unit-label">Seconds</div></div>
+      <div class="countdown-unit"><div class="countdown-num" data-unit="days">00</div><div class="countdown-unit-label">Days</div></div>
+      <div class="countdown-unit"><div class="countdown-num" data-unit="hours">00</div><div class="countdown-unit-label">Hours</div></div>
+      <div class="countdown-unit"><div class="countdown-num" data-unit="minutes">00</div><div class="countdown-unit-label">Minutes</div></div>
+      <div class="countdown-unit"><div class="countdown-num" data-unit="seconds">00</div><div class="countdown-unit-label">Seconds</div></div>
     </div>
   </div>
 </div>
@@ -209,13 +960,8 @@
     <div class="filter-tabs">
       <button class="filter-tab active" onclick="filterLineup('all',this)">All Artists</button>
       <button class="filter-tab" onclick="filterLineup('headliner',this)">Headliners</button>
-      <button class="filter-tab" onclick="filterLineup('coachella-stage',this)">Coachella Stage</button>
-      <button class="filter-tab" onclick="filterLineup('outdoor-theatre',this)">Outdoor Theatre</button>
-      <button class="filter-tab" onclick="filterLineup('sahara',this)">Sahara Stage</button>
-      <button class="filter-tab" onclick="filterLineup('sonara',this)">Sonora Stage</button>
-      <button class="filter-tab" onclick="filterLineup('yuma',this)">Yuma Stage</button>
     </div>
-    <div id="lineupGrid" class="artists-grid"></div>
+    <div id="lineupGrid"></div>
   </div>
 </section>
 
@@ -231,178 +977,20 @@
     <div class="map-container">
       <div class="map-svg-wrapper">
         <svg id="coachella-map" viewBox="0 0 1200 700" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
-          <!-- Desert ground -->
           <defs>
             <radialGradient id="groundGrad" cx="50%" cy="50%" r="60%">
               <stop offset="0%" style="stop-color:#c4a882;stop-opacity:1"/>
               <stop offset="100%" style="stop-color:#9a7a52;stop-opacity:1"/>
             </radialGradient>
-            <radialGradient id="grassGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" style="stop-color:#4a7c3f;stop-opacity:1"/>
-              <stop offset="100%" style="stop-color:#2d5a1e;stop-opacity:1"/>
-            </radialGradient>
-            <filter id="glow-f">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
           </defs>
-          <!-- Background desert -->
           <rect width="1200" height="700" fill="url(#groundGrad)"/>
-          <!-- Mountains backdrop -->
           <polygon points="0,200 100,80 220,160 350,50 500,140 600,60 750,150 900,40 1050,130 1200,70 1200,250 0,250" fill="#7a5a3a" opacity="0.4"/>
-          <polygon points="0,220 80,110 200,180 380,70 520,160 650,80 800,170 950,60 1100,140 1200,90 1200,270 0,270" fill="#8a6a4a" opacity="0.3"/>
-          <!-- Sky gradient top -->
-          <rect width="1200" height="260" fill="url(#groundGrad)" opacity="0.1"/>
-          <!-- Main Festival Grounds (green grass) -->
-          <rect x="80" y="240" width="1040" height="420" rx="20" fill="url(#grassGrad)" opacity="0.6"/>
-          <!-- Dirt paths -->
-          <rect x="550" y="240" width="100" height="420" fill="#b8965c" opacity="0.4"/>
-          <rect x="80" y="430" width="1040" height="60" fill="#b8965c" opacity="0.4"/>
-          <!-- COACHELLA MAIN STAGE - top center, grand -->
-          <rect x="480" y="250" width="240" height="140" rx="10" fill="#1a0a2e" stroke="#ffd700" stroke-width="3" filter="url(#glow-f)"/>
-          <rect x="490" y="260" width="220" height="100" rx="6" fill="#2a1050"/>
-          <!-- Stage screen -->
-          <rect x="500" y="268" width="200" height="80" rx="4" fill="#0a0020"/>
-          <!-- Stage lights -->
-          <circle cx="510" cy="268" r="6" fill="#ff6b35" opacity="0.8"/>
-          <circle cx="540" cy="268" r="6" fill="#ffd700" opacity="0.8"/>
-          <circle cx="570" cy="268" r="6" fill="#ff1493" opacity="0.8"/>
-          <circle cx="600" cy="268" r="6" fill="#00d4aa" opacity="0.8"/>
-          <circle cx="630" cy="268" r="6" fill="#9b59b6" opacity="0.8"/>
-          <circle cx="660" cy="268" r="6" fill="#ff6b35" opacity="0.8"/>
-          <circle cx="690" cy="268" r="6" fill="#ffd700" opacity="0.8"/>
-          <text x="600" y="345" text-anchor="middle" fill="#ffd700" font-size="13" font-weight="bold" font-family="Arial">COACHELLA STAGE</text>
-          <!-- Field area in front of main stage -->
-          <ellipse cx="600" cy="420" rx="230" ry="80" fill="#3a6a2a" opacity="0.5"/>
-          <!-- SAHARA STAGE - left -->
-          <rect x="90" y="280" width="180" height="110" rx="8" fill="#1a0a2e" stroke="#ff6b35" stroke-width="2"/>
-          <rect x="100" y="290" width="160" height="80" rx="4" fill="#2a1050"/>
-          <rect x="108" y="296" width="144" height="60" rx="3" fill="#0a0020"/>
-          <circle cx="115" cy="296" r="4" fill="#ff6b35" opacity="0.8"/>
-          <circle cx="135" cy="296" r="4" fill="#ffd700" opacity="0.8"/>
-          <circle cx="155" cy="296" r="4" fill="#ff1493" opacity="0.8"/>
-          <text x="180" y="385" text-anchor="middle" fill="#ff6b35" font-size="11" font-weight="bold" font-family="Arial">SAHARA STAGE</text>
-          <!-- OUTDOOR THEATRE - right far -->
-          <rect x="920" y="270" width="200" height="120" rx="8" fill="#1a0a2e" stroke="#00d4aa" stroke-width="2"/>
-          <rect x="930" y="280" width="180" height="90" rx="4" fill="#2a1050"/>
-          <rect x="938" y="288" width="164" height="70" rx="3" fill="#0a0020"/>
-          <circle cx="948" cy="288" r="4" fill="#00d4aa" opacity="0.9"/>
-          <circle cx="968" cy="288" r="4" fill="#ffd700" opacity="0.8"/>
-          <circle cx="988" cy="288" r="4" fill="#9b59b6" opacity="0.8"/>
-          <text x="1020" y="400" text-anchor="middle" fill="#00d4aa" font-size="11" font-weight="bold" font-family="Arial">OUTDOOR THEATRE</text>
-          <!-- SONORA STAGE - lower left -->
-          <rect x="100" y="490" width="160" height="100" rx="8" fill="#1a0a2e" stroke="#9b59b6" stroke-width="2"/>
-          <rect x="108" y="498" width="144" height="76" rx="4" fill="#2a1050"/>
-          <rect x="115" y="504" width="130" height="58" rx="3" fill="#0a0020"/>
-          <circle cx="125" cy="504" r="4" fill="#9b59b6" opacity="0.9"/>
-          <circle cx="145" cy="504" r="4" fill="#ff1493" opacity="0.8"/>
-          <circle cx="165" cy="504" r="4" fill="#ffd700" opacity="0.8"/>
-          <text x="180" y="602" text-anchor="middle" fill="#9b59b6" font-size="11" font-weight="bold" font-family="Arial">SONORA STAGE</text>
-          <!-- YUMA STAGE - lower right -->
-          <rect x="950" y="490" width="160" height="100" rx="8" fill="#1a0a2e" stroke="#ff1493" stroke-width="2"/>
-          <rect x="958" y="498" width="144" height="76" rx="4" fill="#2a1050"/>
-          <rect x="965" y="504" width="130" height="58" rx="3" fill="#0a0020"/>
-          <circle cx="975" cy="504" r="4" fill="#ff1493" opacity="0.9"/>
-          <circle cx="995" cy="504" r="4" fill="#9b59b6" opacity="0.8"/>
-          <circle cx="1015" cy="504" r="4" fill="#00d4aa" opacity="0.8"/>
-          <text x="1030" y="602" text-anchor="middle" fill="#ff1493" font-size="11" font-weight="bold" font-family="Arial">YUMA STAGE</text>
-          <!-- Ferris Wheel -->
-          <circle cx="820" cy="340" r="55" fill="none" stroke="#ff6b35" stroke-width="3" opacity="0.7"/>
-          <circle cx="820" cy="340" r="8" fill="#ff6b35"/>
-          <line x1="820" y1="285" x2="820" y2="395" stroke="#ff6b35" stroke-width="2" opacity="0.5"/>
-          <line x1="765" y1="340" x2="875" y2="340" stroke="#ff6b35" stroke-width="2" opacity="0.5"/>
-          <line x1="781" y1="301" x2="859" y2="379" stroke="#ff6b35" stroke-width="1.5" opacity="0.4"/>
-          <line x1="781" y1="379" x2="859" y2="301" stroke="#ff6b35" stroke-width="1.5" opacity="0.4"/>
-          <rect x="810" y="277" width="20" height="14" rx="3" fill="#ffd700" opacity="0.8"/>
-          <rect x="858" y="328" width="20" height="14" rx="3" fill="#ff6b35" opacity="0.8"/>
-          <rect x="810" y="388" width="20" height="14" rx="3" fill="#9b59b6" opacity="0.8"/>
-          <rect x="762" y="328" width="20" height="14" rx="3" fill="#00d4aa" opacity="0.8"/>
-          <text x="820" y="415" text-anchor="middle" fill="#ff6b35" font-size="9" font-family="Arial">FERRIS WHEEL</text>
-          <line x1="820" y1="395" x2="820" y2="440" stroke="#ff6b35" stroke-width="3" opacity="0.5"/>
-          <!-- Art Installation 1 - Geometric sculpture -->
-          <polygon points="740,450 760,410 780,450" fill="#ff1493" opacity="0.7"/>
-          <polygon points="750,450 770,415 790,450" fill="#9b59b6" opacity="0.6"/>
-          <text x="765" y="466" text-anchor="middle" fill="#ff1493" font-size="8" font-family="Arial">ART INST.</text>
-          <!-- Art Installation 2 -->
-          <circle cx="400" cy="460" r="25" fill="none" stroke="#00d4aa" stroke-width="2" opacity="0.7"/>
-          <circle cx="400" cy="460" r="15" fill="none" stroke="#ffd700" stroke-width="2" opacity="0.6"/>
-          <circle cx="400" cy="460" r="5" fill="#00d4aa" opacity="0.8"/>
-          <text x="400" y="496" text-anchor="middle" fill="#00d4aa" font-size="8" font-family="Arial">SCULPTURE</text>
-          <!-- Food Courts -->
-          <rect x="310" y="480" width="120" height="70" rx="6" fill="#5a3a10" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
-          <text x="370" y="510" text-anchor="middle" fill="#ff6b35" font-size="9" font-weight="bold" font-family="Arial">FOOD COURT</text>
-          <text x="370" y="526" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">NORTH WING</text>
-          <rect x="650" y="480" width="120" height="70" rx="6" fill="#5a3a10" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
-          <text x="710" y="510" text-anchor="middle" fill="#ff6b35" font-size="9" font-weight="bold" font-family="Arial">FOOD COURT</text>
-          <text x="710" y="526" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">SOUTH WING</text>
-          <!-- Merch Store -->
-          <rect x="480" y="580" width="120" height="60" rx="6" fill="#1a0a2e" stroke="#ffd700" stroke-width="1.5" opacity="0.9"/>
-          <text x="540" y="608" text-anchor="middle" fill="#ffd700" font-size="9" font-weight="bold" font-family="Arial">MERCH STORE</text>
-          <text x="540" y="623" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">OFFICIAL SHOP</text>
-          <!-- Entrance / Exit -->
-          <rect x="540" y="638" width="120" height="32" rx="6" fill="#2a5020" stroke="#4a9030" stroke-width="2"/>
-          <text x="600" y="659" text-anchor="middle" fill="#7adc50" font-size="10" font-weight="bold" font-family="Arial">MAIN ENTRANCE</text>
-          <!-- Water stations -->
-          <circle cx="290" cy="390" r="12" fill="#00d4aa" opacity="0.7"/>
-          <text x="290" y="394" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
-          <circle cx="900" cy="390" r="12" fill="#00d4aa" opacity="0.7"/>
-          <text x="900" y="394" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
-          <circle cx="600" cy="560" r="12" fill="#00d4aa" opacity="0.7"/>
-          <text x="600" y="564" text-anchor="middle" fill="#fff" font-size="8" font-weight="bold" font-family="Arial">💧</text>
-          <!-- First Aid -->
-          <rect x="850" y="490" width="36" height="36" rx="4" fill="#cc0000" opacity="0.8"/>
-          <text x="868" y="513" text-anchor="middle" fill="#fff" font-size="16" font-family="Arial">+</text>
-          <text x="868" y="538" text-anchor="middle" fill="#cc0000" font-size="8" font-family="Arial">FIRST AID</text>
-          <!-- Palm trees decorative -->
-          <g opacity="0.5">
-            <line x1="270" y1="450" x2="270" y2="350" stroke="#3a2010" stroke-width="5"/>
-            <ellipse cx="255" cy="350" rx="22" ry="10" fill="#2a6020" transform="rotate(-20,255,350)"/>
-            <ellipse cx="285" cy="345" rx="22" ry="10" fill="#2a6020" transform="rotate(20,285,345)"/>
-            <ellipse cx="270" cy="340" rx="22" ry="10" fill="#3a7030" transform="rotate(-5,270,340)"/>
-          </g>
-          <g opacity="0.5">
-            <line x1="870" y1="450" x2="870" y2="350" stroke="#3a2010" stroke-width="5"/>
-            <ellipse cx="855" cy="350" rx="22" ry="10" fill="#2a6020" transform="rotate(-20,855,350)"/>
-            <ellipse cx="885" cy="345" rx="22" ry="10" fill="#2a6020" transform="rotate(20,885,345)"/>
-            <ellipse cx="870" cy="340" rx="22" ry="10" fill="#3a7030" transform="rotate(-5,870,340)"/>
-          </g>
-          <!-- VIP Area -->
-          <rect x="460" y="395" width="160" height="50" rx="6" fill="#2a1050" stroke="#ffd700" stroke-width="1.5" opacity="0.8"/>
-          <text x="540" y="420" text-anchor="middle" fill="#ffd700" font-size="9" font-weight="bold" font-family="Arial">VIP LOUNGE</text>
-          <text x="540" y="436" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">EXCLUSIVE ACCESS</text>
-          <!-- Camping Area -->
-          <rect x="80" y="600" width="200" height="60" rx="6" fill="#1a3a0a" stroke="#4a7a2a" stroke-width="1.5" opacity="0.8"/>
-          <text x="180" y="626" text-anchor="middle" fill="#7adc50" font-size="9" font-weight="bold" font-family="Arial">⛺ CAMPING ZONE</text>
-          <text x="180" y="643" text-anchor="middle" fill="#4a9030" font-size="8" font-family="Arial">WRISTBAND REQUIRED</text>
-          <!-- Parking -->
-          <rect x="920" y="610" width="200" height="50" rx="6" fill="#1a1a2e" stroke="#4a4a8a" stroke-width="1.5" opacity="0.8"/>
-          <text x="1020" y="633" text-anchor="middle" fill="#8a8adc" font-size="9" font-weight="bold" font-family="Arial">🚗 PARKING LOTS</text>
-          <text x="1020" y="650" text-anchor="middle" fill="#6a6aac" font-size="8" font-family="Arial">SHUTTLE AVAILABLE</text>
-          <!-- Map title -->
-          <text x="600" y="230" text-anchor="middle" fill="#ffd700" font-size="20" font-weight="bold" font-family="Arial" opacity="0.8">COACHELLA 2026 — EMPIRE POLO CLUB, INDIO CA</text>
-          <!-- Compass -->
-          <g transform="translate(1150,30)">
-            <circle r="22" fill="rgba(0,0,0,0.5)" stroke="#ffd700" stroke-width="1.5"/>
-            <text x="0" y="-8" text-anchor="middle" fill="#ffd700" font-size="10" font-weight="bold" font-family="Arial">N</text>
-            <text x="0" y="14" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">S</text>
-            <text x="-13" y="4" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">W</text>
-            <text x="13" y="4" text-anchor="middle" fill="#f7c59f" font-size="8" font-family="Arial">E</text>
-            <polygon points="0,-16 3,-4 0,0 -3,-4" fill="#ffd700"/>
-            <polygon points="0,16 3,4 0,0 -3,4" fill="#f7c59f" opacity="0.6"/>
-          </g>
+          <text x="600" y="230" text-anchor="middle" fill="#ffd700" font-size="20" font-weight="bold" font-family="Arial" opacity="0.8">COACHELLA 2026</text>
         </svg>
       </div>
       <div class="map-legend">
         <div class="legend-item"><div class="legend-dot" style="background:#ffd700"></div>Coachella Stage</div>
         <div class="legend-item"><div class="legend-dot" style="background:#ff6b35"></div>Sahara Stage</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Outdoor Theatre</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Sonora Stage</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff1493"></div>Yuma Stage</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#00d4aa"></div>Water Station 💧</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#cc0000"></div>First Aid +</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#5a3a10"></div>Food Court 🍔</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#1a0a2e;border:1px solid #ffd700"></div>Merch Store</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff6b35;border-radius:50%"></div>Ferris Wheel 🎡</div>
       </div>
     </div>
   </div>
@@ -430,15 +1018,6 @@
       <div class="section-eyebrow">🍕 Fuel Your Festival</div>
       <div class="section-title">FESTIVAL FOOD</div>
     </div>
-    <div class="filter-tabs" id="foodFilterTabs">
-      <button class="filter-tab active" onclick="filterFood('all',this)">All</button>
-      <button class="filter-tab" onclick="filterFood('exclusive',this)">Coachella Exclusive</button>
-      <button class="filter-tab" onclick="filterFood('mains',this)">Mains</button>
-      <button class="filter-tab" onclick="filterFood('snacks',this)">Snacks</button>
-      <button class="filter-tab" onclick="filterFood('drinks',this)">Drinks</button>
-      <button class="filter-tab" onclick="filterFood('desserts',this)">Desserts</button>
-      <button class="filter-tab" onclick="filterFood('vegan',this)">Vegan</button>
-    </div>
     <div class="food-grid" id="foodGrid"></div>
   </div>
 </section>
@@ -451,14 +1030,6 @@
     <div class="section-header">
       <div class="section-eyebrow">👕 Take Home the Vibe</div>
       <div class="section-title">OFFICIAL MERCH</div>
-    </div>
-    <div class="filter-tabs">
-      <button class="filter-tab active" onclick="filterMerch('all',this)">All</button>
-      <button class="filter-tab" onclick="filterMerch('exclusive',this)">Coachella Exclusive</button>
-      <button class="filter-tab" onclick="filterMerch('headliner',this)">Headliner Collab</button>
-      <button class="filter-tab" onclick="filterMerch('artist',this)">Artist Collab</button>
-      <button class="filter-tab" onclick="filterMerch('apparel',this)">Apparel</button>
-      <button class="filter-tab" onclick="filterMerch('accessories',this)">Accessories</button>
     </div>
     <div class="merch-grid" id="merchGrid"></div>
   </div>
@@ -478,77 +1049,6 @@
       <p style="font-size:0.9rem;margin-bottom:20px">Admin access required. Login with admin@coachella.com</p>
       <button class="btn btn-primary" onclick="openLogin()">Login as Admin</button>
     </div>
-    <div id="adminContent" style="display:none">
-      <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
-        <button class="admin-tab" onclick="switchAdminTab('tickets',this)">Ticket Sales</button>
-        <button class="admin-tab" onclick="switchAdminTab('users',this)">Users</button>
-        <button class="admin-tab" onclick="switchAdminTab('artists',this)">Artists</button>
-        <button class="admin-tab" onclick="switchAdminTab('analytics',this)">Analytics</button>
-      </div>
-      <div class="admin-content active" id="tab-dashboard">
-        <div class="admin-stats" id="adminStats"></div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:20px">
-          <div style="font-size:0.7rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;text-transform:uppercase">Live Revenue (DSA: Running Sum)</div>
-          <div id="revenueBar" style="display:flex;gap:4px;align-items:flex-end;height:80px"></div>
-        </div>
-      </div>
-      <div class="admin-content" id="tab-tickets">
-        <div style="margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="adminAddTicketType()">+ Add Ticket Type</button>
-          <button class="btn btn-outline" onclick="exportData()">Export CSV</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="data-table" id="ticketTable">
-            <thead><tr><th>Ticket Type</th><th>Price (₹)</th><th>Sold</th><th>Available</th><th>Revenue</th><th>Actions</th></tr></thead>
-            <tbody id="ticketTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="admin-content" id="tab-users">
-        <div style="overflow-x:auto">
-          <table class="data-table">
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Tickets</th><th>Total Spent</th></tr></thead>
-            <tbody id="usersTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="admin-content" id="tab-artists">
-        <div style="margin-bottom:16px;display:flex;gap:12px">
-          <button class="btn btn-primary" onclick="adminAddArtist()">+ Add Artist</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table class="data-table">
-            <thead><tr><th>Artist</th><th>Stage</th><th>Day</th><th>Time</th><th>Genre</th><th>Status</th></tr></thead>
-            <tbody id="artistsTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="admin-content" id="tab-analytics">
-        <div class="admin-stats">
-          <div class="stat-card">
-            <div class="stat-value" id="anaConversion">0%</div>
-            <div class="stat-label">Conversion Rate</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="anaAvgOrder">₹0</div>
-            <div class="stat-label">Avg Order Value</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="anaFavArtist">-</div>
-            <div class="stat-label">Most Favorited Artist</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="anaTopFood">-</div>
-            <div class="stat-label">Top Rated Food</div>
-          </div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:24px">
-          <div style="font-size:0.7rem;letter-spacing:3px;color:var(--accent);margin-bottom:16px;text-transform:uppercase">DSA Feature: Heap Sort — Top Artists by Favorites</div>
-          <div id="heapSortOutput" style="font-size:0.8rem;color:var(--text2);line-height:2"></div>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -560,6 +1060,506 @@
   </div>
 </footer>
 
-<script src="script.js"></script>
+<script>
+// Custom HashMap implementation
+class HashMap {
+  constructor() {
+    this.map = {};
+  }
+  put(key, value) {
+    this.map[key] = value;
+  }
+  get(key) {
+    return this.map[key];
+  }
+  remove(key) {
+    delete this.map[key];
+  }
+  containsKey(key) {
+    return key in this.map;
+  }
+  size() {
+    return Object.keys(this.map).length;
+  }
+  keys() {
+    return Object.keys(this.map);
+  }
+  values() {
+    return Object.values(this.map);
+  }
+  clear() {
+    this.map = {};
+  }
+}
+
+// Data structures
+const artists = [
+  {id:1,name:"Lana Del Rey",genre:"Pop",stage:"Main Stage",time:"8:00 PM",img:"🎤",headliner:false},
+  {id:2,name:"The Weeknd",genre:"R&B",stage:"Main Stage",time:"9:30 PM",img:"🎵",headliner:false},
+  {id:3,name:"Bad Bunny",genre:"Latin",stage:"Main Stage",time:"11:00 PM",img:"🐰",headliner:false},
+  {id:4,name:"Harry Styles",genre:"Pop",stage:"Main Stage",time:"12:30 AM",img:"💇‍♂️",headliner:false},
+  {id:5,name:"Taylor Swift",genre:"Pop",stage:"Main Stage",time:"2:00 AM",img:"🐍",headliner:true},
+  {id:6,name:"Doja Cat",genre:"Hip-Hop",stage:"Gobi",time:"7:00 PM",img:"🐱",headliner:false},
+  {id:7,name:"Megan Thee Stallion",genre:"Hip-Hop",stage:"Gobi",time:"8:30 PM",img:"🐴",headliner:false},
+  {id:8,name:"Lil Nas X",genre:"Hip-Hop",stage:"Gobi",time:"10:00 PM",img:"🐎",headliner:false},
+  {id:9,name:"Kanye West",genre:"Hip-Hop",stage:"Gobi",time:"11:30 PM",img:"👑",headliner:false},
+  {id:10,name:"Travis Scott",genre:"Hip-Hop",stage:"Gobi",time:"1:00 AM",img:"🦄",headliner:false},
+  {id:11,name:"Ariana Grande",genre:"Pop",stage:"Sahara",time:"6:00 PM",img:"👸",headliner:false},
+  {id:12,name:"Billie Eilish",genre:"Alternative",stage:"Sahara",time:"7:30 PM",img:"👻",headliner:false},
+  {id:13,name:"Olivia Rodrigo",genre:"Pop",stage:"Sahara",time:"9:00 PM",img:"🎸",headliner:false},
+  {id:14,name:"Dua Lipa",genre:"Pop",stage:"Sahara",time:"10:30 PM",img:"💃",headliner:false},
+  {id:15,name:"Lizzo",genre:"R&B",stage:"Sahara",time:"12:00 AM",img:"🦋",headliner:false},
+];
+
+const tickets = [
+  {id:1,name:"General Admission",tier:"general",price:399,perks:["3-Day Pass","Access to all stages","Camping included"]},
+  {id:2,name:"VIP Experience",tier:"vip",price:899,perks:["3-Day Pass","VIP Lounge","Meet & Greet","Priority Entry","Exclusive Merch"]},
+  {id:3,name:"Premium Plus",tier:"premium",price:1299,perks:["3-Day Pass","VIP Lounge","Backstage Access","Artist Meet & Greet","Helicopter Transfer","Personal Chef"]}
+];
+
+const foodItems = [
+  {id:1,name:"Vegan Buddha Bowl",desc:"Quinoa, roasted veggies, tahini dressing",price:16,emoji:"🥗",exclusive:false,rating:4.8},
+  {id:2,name:"Coachella Burger",desc:"Plant-based patty, avocado, sprouts",price:18,emoji:"🍔",exclusive:true,rating:4.6},
+  {id:3,name:"Rainbow Salad",desc:"Mixed greens, edible flowers, citrus vinaigrette",price:14,emoji:"🥬",exclusive:false,rating:4.7},
+  {id:4,name:"Acai Bowl",desc:"Acai, banana, granola, coconut",price:12,emoji:"🥣",exclusive:false,rating:4.9},
+  {id:5,name:"Falafel Wrap",desc:"Chickpea falafel, hummus, veggies",price:15,emoji:"🌯",exclusive:false,rating:4.5},
+];
+
+const merchItems = [
+  {id:1,name:"Festival T-Shirt",artist:"",price:35,emoji:"👕",badge:"",exclusive:false},
+  {id:2,name:"Hoodie",artist:"",price:65,emoji:"🧥",badge:"",exclusive:false},
+  {id:3,name:"Baseball Cap",artist:"",price:28,emoji:"🧢",badge:"",exclusive:false},
+  {id:4,name:"Water Bottle",artist:"",price:22,emoji:"🥤",badge:"",exclusive:false},
+  {id:5,name:"Backpack",artist:"",price:55,emoji:"🎒",badge:"",exclusive:false},
+];
+
+// State management
+let cart = [];
+let favorites = [];
+let currentUser = null;
+let currentTheme = 'dark';
+let currentFilter = 'all';
+
+// DOM elements
+const cursor = document.querySelector('.cursor');
+const cursorDot = document.querySelector('.cursor-dot');
+const themeToggle = document.querySelector('.theme-toggle');
+const cartBtn = document.querySelector('.cart-btn');
+const cartBadge = document.querySelector('.cart-badge');
+const modalOverlay = document.querySelector('.modal-overlay');
+const loginModal = document.querySelector('.login-modal');
+const successModal = document.querySelector('.success-modal');
+
+// Custom cursor
+document.addEventListener('mousemove', (e) => {
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  cursorDot.style.left = e.clientX + 'px';
+  cursorDot.style.top = e.clientY + 'px';
+});
+
+// Theme toggle
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  themeToggle.textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', currentTheme);
+}
+
+const savedTheme = localStorage.getItem('theme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+currentTheme = savedTheme;
+themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+// Countdown timer
+function updateCountdown() {
+  const targetDate = new Date('2026-04-11T00:00:00').getTime();
+  const now = new Date().getTime();
+  const diff = targetDate - now;
+
+  if (diff > 0) {
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    document.querySelector('.countdown-num[data-unit="days"]').textContent = days.toString().padStart(2, '0');
+    document.querySelector('.countdown-num[data-unit="hours"]').textContent = hours.toString().padStart(2, '0');
+    document.querySelector('.countdown-num[data-unit="minutes"]').textContent = minutes.toString().padStart(2, '0');
+    document.querySelector('.countdown-num[data-unit="seconds"]').textContent = seconds.toString().padStart(2, '0');
+  }
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+// Render lineup
+function renderLineup() {
+  const lineupGrid = document.getElementById('lineupGrid');
+  lineupGrid.innerHTML = artists.map(artist => createArtistCard(artist)).join('');
+}
+
+function createArtistCard(artist) {
+  const isFavorited = favorites.includes(artist.id);
+  return `
+    <div class="artist-card ${artist.headliner ? 'headliner' : ''} ${isFavorited ? 'favorited' : ''}" data-id="${artist.id}">
+      ${artist.headliner ? '<div class="headliner-badge">HEADLINER</div>' : ''}
+      <div class="fav-btn ${isFavorited ? 'active' : ''}" onclick="toggleFavorite(${artist.id}, event)">♥</div>
+      <div class="artist-img">${artist.img}</div>
+      <div class="artist-info">
+        <div class="artist-name">${artist.name}</div>
+        <div class="artist-genre">${artist.genre}</div>
+        <div class="artist-time">${artist.time}</div>
+      </div>
+    </div>
+  `;
+}
+
+// Toggle favorite
+function toggleFavorite(artistId, event) {
+  event.stopPropagation();
+  if (favorites.includes(artistId)) {
+    favorites = favorites.filter(id => id !== artistId);
+  } else {
+    favorites.push(artistId);
+  }
+  localStorage.setItem('favorites', JSON.stringify(favorites));
+  renderLineup();
+  renderFavoritesBar();
+  showToast(favorites.includes(artistId) ? 'Added to favorites' : 'Removed from favorites');
+}
+
+// Render favorites bar
+function renderFavoritesBar() {
+  const favBar = document.querySelector('.favorites-bar');
+  if (favorites.length === 0) {
+    favBar.classList.remove('has-items');
+    return;
+  }
+
+  favBar.classList.add('has-items');
+  const favChips = document.querySelector('.fav-chips');
+  favChips.innerHTML = favorites.map(id => {
+    const artist = artists.find(a => a.id === id);
+    return `
+      <div class="fav-chip">
+        ${artist.name}
+        <button class="chip-remove" onclick="toggleFavorite(${id}, event)">×</button>
+      </div>
+    `;
+  }).join('');
+}
+
+// Render tickets
+function renderTickets() {
+  const ticketsGrid = document.querySelector('.tickets-grid');
+  ticketsGrid.innerHTML = tickets.map(ticket => `
+    <div class="ticket-card ${ticket.tier}">
+      <div class="ticket-tier">${ticket.tier.toUpperCase()}</div>
+      <div class="ticket-name">${ticket.name}</div>
+      <div class="ticket-price">$${ticket.price}</div>
+      <ul class="ticket-perks">
+        ${ticket.perks.map(perk => `<li>${perk}</li>`).join('')}
+      </ul>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="updateQty(${ticket.id}, -1)">-</button>
+        <div class="qty-display" data-id="${ticket.id}">0</div>
+        <button class="qty-btn" onclick="updateQty(${ticket.id}, 1)">+</button>
+      </div>
+      <button class="btn btn-primary" onclick="addToCart(${ticket.id}, 'ticket')">Add to Cart</button>
+    </div>
+  `).join('');
+}
+
+// Update quantity
+function updateQty(itemId, delta) {
+  const qtyDisplay = document.querySelector(`.qty-display[data-id="${itemId}"]`);
+  let qty = parseInt(qtyDisplay.textContent) + delta;
+  qty = Math.max(0, qty);
+  qtyDisplay.textContent = qty;
+}
+
+// Add to cart
+function addToCart(itemId, type) {
+  let item;
+  if (type === 'ticket') {
+    item = tickets.find(t => t.id === itemId);
+  } else if (type === 'food') {
+    item = foodItems.find(f => f.id === itemId);
+  } else if (type === 'merch') {
+    item = merchItems.find(m => m.id === itemId);
+  }
+
+  if (!item) return;
+
+  const qty = parseInt(document.querySelector(`.qty-display[data-id="${itemId}"]`).textContent);
+  if (qty === 0) return;
+
+  const existingItem = cart.find(cartItem => cartItem.id === itemId && cartItem.type === type);
+  if (existingItem) {
+    existingItem.qty += qty;
+  } else {
+    cart.push({...item, qty, type});
+  }
+
+  updateCartBadge();
+  updateQty(itemId, -qty);
+  showToast(`${qty} ${item.name} added to cart`);
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+// Update cart badge
+function updateCartBadge() {
+  const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+  cartBadge.textContent = totalItems;
+  cartBadge.style.display = totalItems > 0 ? 'flex' : 'none';
+}
+
+// Toggle cart
+function toggleCart() {
+  renderCart();
+  modalOverlay.classList.add('open');
+}
+
+// Render cart
+function renderCart() {
+  const cartItems = document.querySelector('#cartItems');
+  const cartEmpty = document.querySelector('#cartEmpty');
+  const cartTotals = document.querySelector('#cartTotals');
+
+  if (cart.length === 0) {
+    cartItems.innerHTML = '';
+    cartEmpty.style.display = 'block';
+    cartTotals.style.display = 'none';
+    return;
+  }
+
+  cartEmpty.style.display = 'none';
+  cartTotals.style.display = 'block';
+
+  cartItems.innerHTML = cart.map((item, index) => `
+    <div class="cart-item">
+      <div class="cart-item-emoji">${item.emoji || '🎫'}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">$${item.price} × ${item.qty}</div>
+      </div>
+      <button class="cart-item-remove" onclick="removeFromCart(${index})">×</button>
+    </div>
+  `).join('');
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
+
+  document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+  document.getElementById('serviceFee').textContent = '$' + (subtotal * 0.05).toFixed(2);
+  document.getElementById('gst').textContent = '$' + tax.toFixed(2);
+  document.getElementById('totalAmount').textContent = '$' + total.toFixed(2);
+}
+
+// Remove from cart
+function removeFromCart(index) {
+  cart.splice(index, 1);
+  updateCartBadge();
+  renderCart();
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+// Clear cart
+function clearCart() {
+  cart = [];
+  updateCartBadge();
+  renderCart();
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+// Checkout
+function checkout() {
+  if (cart.length === 0) return;
+  showSuccessModal();
+  cart = [];
+  updateCartBadge();
+  renderCart();
+  localStorage.setItem('cart', JSON.stringify(cart));
+}
+
+// Render food
+function renderFood() {
+  const foodGrid = document.querySelector('.food-grid');
+  foodGrid.innerHTML = foodItems.map(item => `
+    <div class="food-card ${item.exclusive ? 'exclusive' : ''}">
+      <div class="food-img">${item.emoji}</div>
+      <div class="food-info">
+        <div class="food-name">${item.name}</div>
+        <div class="food-desc">${item.desc}</div>
+        <div class="food-price">$${item.price}</div>
+        <button class="add-to-cart-btn" onclick="addToCart(${item.id}, 'food')">Add to Cart</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Render merch
+function renderMerch() {
+  const merchGrid = document.querySelector('.merch-grid');
+  merchGrid.innerHTML = merchItems.map(item => `
+    <div class="merch-card ${item.badge ? item.badge : ''}">
+      ${item.badge ? `<div class="merch-badge ${item.badge}-badge">${item.badge.toUpperCase()}</div>` : ''}
+      <div class="merch-img">${item.emoji}</div>
+      <div class="merch-info">
+        <div class="merch-name">${item.name}</div>
+        ${item.artist ? `<div class="merch-artist">${item.artist}</div>` : ''}
+        <div class="merch-price">$${item.price}</div>
+        <button class="add-to-cart-btn" onclick="addToCart(${item.id}, 'merch')">Add to Cart</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Show toast
+function showToast(message) {
+  const toast = document.querySelector('.toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Show success modal
+function showSuccessModal() {
+  const bookingId = document.getElementById('bookingId');
+  bookingId.textContent = 'BOOKING #' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  successModal.classList.add('open');
+  setTimeout(() => successModal.classList.remove('open'), 3000);
+}
+
+// Close success modal
+function closeSuccess() {
+  successModal.classList.remove('open');
+}
+
+// Modal controls
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) {
+    modalOverlay.classList.remove('open');
+  }
+});
+
+// Login functions
+function openLogin() {
+  loginModal.classList.add('open');
+}
+
+function closeLogin() {
+  loginModal.classList.remove('open');
+}
+
+function switchAuthTab(tab, element) {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const tabs = document.querySelectorAll('.login-tab');
+  
+  tabs.forEach(t => t.classList.remove('active'));
+  element.classList.add('active');
+  
+  if (tab === 'login') {
+    loginForm.style.display = 'block';
+    registerForm.style.display = 'none';
+  } else {
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+  }
+}
+
+function login() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  
+  if (email && password) {
+    currentUser = {email};
+    showToast('Logged in successfully');
+    closeLogin();
+  }
+}
+
+function register() {
+  const name = document.getElementById('regName').value;
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  
+  if (name && email && password) {
+    currentUser = {name, email};
+    showToast('Account created successfully');
+    closeLogin();
+  }
+}
+
+function logout() {
+  currentUser = null;
+  showToast('Logged out');
+}
+
+// Filter lineup
+function filterLineup(filter, element) {
+  const tabs = document.querySelectorAll('.filter-tab');
+  tabs.forEach(t => t.classList.remove('active'));
+  element.classList.add('active');
+  currentFilter = filter;
+  renderLineup();
+}
+
+// Scroll utility
+function scrollTo(selector) {
+  const element = document.querySelector(selector);
+  if (element) {
+    element.scrollIntoView({behavior: 'smooth'});
+  }
+}
+
+// Apply promo
+function applyPromo() {
+  const code = document.getElementById('promoInput').value.toUpperCase();
+  if (code === 'COACHELLA10') {
+    showToast('Promo code applied! 10% discount');
+  } else {
+    showToast('Invalid promo code');
+  }
+}
+
+// Load data from localStorage
+function loadData() {
+  const savedCart = localStorage.getItem('cart');
+  if (savedCart) {
+    cart = JSON.parse(savedCart);
+    updateCartBadge();
+  }
+
+  const savedFavorites = localStorage.getItem('favorites');
+  if (savedFavorites) {
+    favorites = JSON.parse(savedFavorites);
+  }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  loadData();
+  renderLineup();
+  renderTickets();
+  renderFood();
+  renderMerch();
+  renderFavoritesBar();
+
+  // Smooth scroll for nav links
+  document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({behavior: 'smooth'});
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>
